@@ -87,13 +87,13 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
   return (
     <div className="p-4 md:p-6 animate-fade-in bg-background">
       {/* Header */}
-      <div className="mb-6">
+      <div className="mb-2">
         <h1 className="text-xl md:text-2xl font-bold text-foreground">
           Partner Dashboard
         </h1>
-        <p className="text-sm md:text-base text-muted-foreground">
+        {/* <p className="text-sm md:text-base text-muted-foreground">
           Welcome, {totalApproved[0]?.Account_Name__c}!
-        </p>
+        </p> */}
       </div>
 
       {/* Monthly Funding Stats Header with Date Filter */}
