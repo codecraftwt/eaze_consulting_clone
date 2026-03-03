@@ -50,8 +50,11 @@ export function getStatusStyles(status) {
       return "bg-muted text-muted-foreground border-0";
   }
 }
+const PAGE_SIZE = 10;
+
 export function ReferralsTable({ onViewAll, selectedDate }) {
   const [filter, setFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
   const stats = useMemo(
     () => getMonthlyStats(selectedDate || new Date()),
     [selectedDate],
@@ -101,15 +104,15 @@ export function ReferralsTable({ onViewAll, selectedDate }) {
   }, [totalApplications, selectedDate]);
 
 
-  // const filteredApplications = totalApplicationsThisMonth.filter((app) => {
-  //   if (filter === "all") return true;
-  //   if (filter === "Submitted")
-  //     return app.Lead_Partner_Status__c === "Submitted" || app.Lead_Partner_Status__c === "In Review";
-  //   if (filter === "Approved") return app.Lead_Partner_Status__c === "Approved";
-  //   if (filter === "Funded") return app.Lead_Partner_Status__c === "Funded";
-  //   if (filter === "Declined") return app.Lead_Partner_Status__c === "Declined";
-  //   return true;
-  // });
+// const filteredApplications = totalApplicationsThisMonth.filter((app) => {
+//   if (filter === "all") return true;
+//   if (filter === "Submitted")
+//     return app.Lead_Partner_Status__c === "Submitted" || app.Lead_Partner_Status__c === "In Review";
+//   if (filter === "Approved") return app.Lead_Partner_Status__c === "Approved";
+//   if (filter === "Funded") return app.Lead_Partner_Status__c === "Funded";
+//   if (filter === "Declined") return app.Lead_Partner_Status__c === "Declined";
+//   return true;
+// });
 const filteredApplications = useMemo(() => {
   return totalApplicationsThisMonth.filter((app) => {
     if (filter === "all") return true;
@@ -125,6 +128,17 @@ const filteredApplications = useMemo(() => {
     return true;
   });
 }, [totalApplicationsThisMonth, filter]);
+  const totalPages = Math.max(1, Math.ceil(filteredApplications.length / PAGE_SIZE));
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+  const startIndex = (currentPage - 1) * PAGE_SIZE;
+  const paginatedApplications = filteredApplications.slice(
+    startIndex,
+    startIndex + PAGE_SIZE
+  );
   // console.log(filteredApplicationsNew,'filteredApplicationsNew')
 
   // 1. Get Dynamic Keys
@@ -246,7 +260,7 @@ const filteredApplications = useMemo(() => {
 
               {/* --- BODY --- */}
               <div className="divide-y divide-border">
-                {filteredApplications.map((app, rowIndex) => (
+                {paginatedApplications.map((app, rowIndex) => (
                   <div
                     key={app.Id || rowIndex}
                     className="grid items-center py-4 px-4 hover:bg-muted/50 transition-colors"
@@ -289,6 +303,36 @@ const filteredApplications = useMemo(() => {
           </ScrollArea>
         </div>
       </div>
+      {filteredApplications.length > 0 && (
+        <div className="flex items-center justify-between mt-4 text-xs text-muted-foreground">
+          <span>
+            Showing {startIndex + 1}–
+            {Math.min(startIndex + PAGE_SIZE, filteredApplications.length)} of{" "}
+            {filteredApplications.length}
+          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === 1}
+              onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+            >
+              Prev
+            </Button>
+            <span>
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={currentPage === totalPages}
+              onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+            >
+              Next
+            </Button>
+          </div>
+        </div>
+      )}
     </Card>
   );
 }
