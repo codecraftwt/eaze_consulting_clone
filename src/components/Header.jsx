@@ -34,7 +34,8 @@ export function Header({ activeTab, onTabChange }) {
     dispatch(logout());
     localStorage.clear();
     persistor.purge();
-    navigate("/login");
+    // navigate("/login");
+    navigate("/dashboard");
   };
 
   const isActive = (path) =>{
@@ -73,7 +74,7 @@ export function Header({ activeTab, onTabChange }) {
       {/* Right side */}
       <div className="flex items-center gap-2 md:gap-3">
         {/* Desktop Logout Button */}
-        <Button 
+        {/* <Button 
           variant="outline" 
           size="sm" 
           onClick={handleLogout}
@@ -81,7 +82,7 @@ export function Header({ activeTab, onTabChange }) {
         >
           <LogOut size={16} />
           Logout
-        </Button>
+        </Button> */}
 
         {/* Mobile/Tablet Menu */}
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
@@ -106,7 +107,7 @@ export function Header({ activeTab, onTabChange }) {
                     {item.label}
                   </Link>
                 ))}
-                <hr className="my-2 border-border" />
+                {/* <hr className="my-2 border-border" />
                 <Button
                   variant="ghost"
                   className="w-full justify-start font-medium px-4 py-3 rounded-lg text-red-500 hover:bg-red-50"
@@ -114,7 +115,7 @@ export function Header({ activeTab, onTabChange }) {
                 >
                   <LogOut size={18} className="mr-3" />
                   Logout
-                </Button>
+                </Button> */}
               </nav>
             </div>
           </SheetContent>

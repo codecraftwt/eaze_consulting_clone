@@ -26,7 +26,8 @@ const AppRoutes = () => {
     <Router  basename="/">
       <Routes>
          {/* Redirect empty route ("/") to login */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* <Route path="/" element={<Navigate to="/login" />} /> */}
+        <Route path="/" element={<Navigate to="/dashboard" />} />
         {/* Routes that require the sidebar layout */}
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<Dashboard />} />
