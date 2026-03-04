@@ -80,8 +80,8 @@ const lastYear = month === 1 ? year - 1 : year;
     if (!salesforceToken) {
       dispatch(getSalesforceToken());
     } else {
-      dispatch(getFundedData({ accountId: portalUserId, token: salesforceToken ,month:month,year:year}));
-      dispatch(getFundedLastMonthData({ accountId: portalUserId, token: salesforceToken ,month:lastMonth,year:lastYear}));
+      dispatch(getFundedData({ accountId: "", token: salesforceToken ,month:month,year:year}));
+      dispatch(getFundedLastMonthData({ accountId: "", token: salesforceToken ,month:lastMonth,year:lastYear}));
 
     }
   }, [dispatch, salesforceToken, selectedDate]);

@@ -24,7 +24,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           className="text-sm font-medium"
           style={{ color: payload[0]?.payload?.fill }}
         >
-          ${payload[0].value.toLocaleString()} Funded
+          ${(isNaN(payload[0].value) ? 0 : payload[0].value).toLocaleString()} Funded
         </p>
       </div>
     );
@@ -49,7 +49,7 @@ export function FundingByProgramChart({ selectedDate }) {
     if (!salesforceToken) {
       dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
     } else {
-      dispatch(getFundedData({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
+      dispatch(getFundedData({ accountId: "", token: salesforceToken,month:month,year:year }));
      
     }
   }, [dispatch, salesforceToken, selectedDate]);
@@ -72,7 +72,8 @@ export function FundingByProgramChart({ selectedDate }) {
       if (isSameMonth(appDate, selectedDate)) {
         const program = app.Loan_Program_Type__c; // e.g., "Eaze Cap"
         if (program && typeof totals[program] !== 'undefined') {
-          totals[program] += Number(app.Cash_Collected__c || 0);
+          const cash = parseFloat(app.Cash_Collected__c);
+          totals[program] += isNaN(cash) ? 0 : cash;
         }
       }
     });
@@ -108,7 +109,7 @@ useEffect(()=>{
   //console.log(cashCollectedAllTime.map(m=>m.Cash_Collected__c),'cashCollectedAllTime.map(m=>m.Cash_Collected__c)')
 },[cashCollectedAllTime])
 
- const total = chartData.reduce((sum, p) => sum + p.value, 0);
+ const total = chartData.reduce((sum, p) => sum + (isNaN(p.value) ? 0 : p.value), 0);
   return (
     <Card className="p-4 md:p-5 shadow-sm border border-border rounded-xl md:rounded-2xl bg-card">
       <div className="flex items-center justify-between mb-3 md:mb-4">

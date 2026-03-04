@@ -46,11 +46,11 @@ newLeads
     if (!salesforceToken) {
       dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
     } else {
-      dispatch(getFundedData({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
-      dispatch(getNewLead({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
-      dispatch(getPreApprovedThisMonth({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
-      dispatch(getApprovedThisMonth({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
-      dispatch(getDeclinedThisMonth({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
+      dispatch(getFundedData({ accountId: "", token: salesforceToken,month:month,year:year }));
+      dispatch(getNewLead({ accountId: "", token: salesforceToken,month:month,year:year }));
+      dispatch(getPreApprovedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
+      dispatch(getApprovedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
+      dispatch(getDeclinedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
     }
   }, [dispatch, salesforceToken,selectedDate]);
 

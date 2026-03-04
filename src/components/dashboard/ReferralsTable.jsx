@@ -81,8 +81,8 @@ export function ReferralsTable({ onViewAll, selectedDate }) {
     if (!salesforceToken) {
       dispatch(getSalesforceToken());
     } else {
-      dispatch(getTotalApplications({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApplicationsThisMonth({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
+      dispatch(getTotalApplications({ accountId: "", token: salesforceToken, month: month, year: year }));
+      dispatch(getTotalApplicationsThisMonth({ accountId: "", token: salesforceToken, month: month, year: year }));
 
     }
   }, [dispatch, salesforceToken, selectedDate]);

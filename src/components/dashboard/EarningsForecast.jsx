@@ -26,12 +26,12 @@ export function EarningsForecast({ selectedDate }) {
       } else if (portalUserId) {
         const lastMonth = month === 1 ? 12 : month - 1;
     const lastYear = month === 1 ? year - 1 : year;
-        dispatch(getCashCollectedThisMonth({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
-        dispatch(getCashCollectedLastMonth({ accountId: portalUserId, token: salesforceToken,month:lastMonth,year:lastYear }));
-        dispatch(getCashCollectedAllTime({ accountId: portalUserId, token: salesforceToken,month:month,year:year }));
+        dispatch(getCashCollectedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
+        dispatch(getCashCollectedLastMonth({ accountId: "", token: salesforceToken,month:lastMonth,year:lastYear }));
+        dispatch(getCashCollectedAllTime({ accountId: "", token: salesforceToken,month:month,year:year }));
 
-        dispatch(getFundedData({ accountId: portalUserId, token: salesforceToken ,month:month,year:year}));
-              dispatch(getFundedLastMonthData({ accountId: portalUserId, token: salesforceToken ,month:lastMonth,year:lastYear}));
+        dispatch(getFundedData({ accountId: "", token: salesforceToken ,month:month,year:year}));
+              dispatch(getFundedLastMonthData({ accountId: "", token: salesforceToken ,month:lastMonth,year:lastYear}));
       }
     }, [dispatch, salesforceToken, portalUserId, selectedDate]);
 
