@@ -110,11 +110,24 @@ newLeads
   
 
 const pipelineStages = useMemo(() => {
-  // Helper to safely calculate width
+  // Find the maximum count among all stages for proper scaling
+  const counts = [
+    newLeads.length,
+    preApprovedApplicationsThisMonth.length,
+    declinedApplicationsThisMonth.length,
+    approvedApplicationsThisMonth.length,
+    fundedData.length
+  ];
+  const maxStageCount = Math.max(...counts, 1); // At least 1 to avoid division by zero
+  
+  // Helper to calculate width - proportional to the largest stage
   const getWidth = (count) => {
-    if (!maxCount || maxCount === 0) return "0%";
-    const percentage = Math.round((count / maxCount) * 100);
-    return `${percentage}%`;
+    if (!maxStageCount || maxStageCount === 0) return "100%";
+    // Calculate percentage relative to the largest stage
+    // This ensures proper proportional representation
+    const percentage = Math.round((count / maxStageCount) * 100);
+    // Use minimum of 80px for very small values, otherwise use percentage
+    return percentage <= 15 ? "120px" : `${percentage}%`;
   };
 
   return [
@@ -133,7 +146,7 @@ const pipelineStages = useMemo(() => {
     {
       name: "Declined",
       count: declinedApplicationsThisMonth.length,
-      color: COLORS.inReview, // Fixed: should probably be COLORS.declined
+      color: COLORS.inReview,
       width: getWidth(declinedApplicationsThisMonth.length),
     },
     {
@@ -149,7 +162,7 @@ const pipelineStages = useMemo(() => {
       width: getWidth(fundedData.length),
     },
   ];
-}, [newLeads, preApprovedApplicationsThisMonth, declinedApplicationsThisMonth, approvedApplicationsThisMonth, fundedData, maxCount]);
+}, [newLeads, preApprovedApplicationsThisMonth, declinedApplicationsThisMonth, approvedApplicationsThisMonth, fundedData]);
 
 // console.log(pipelineStages,'pipelineStages')
 
@@ -170,10 +183,9 @@ return (
                 style={{
                   width: stage.width,
                   backgroundColor: stage.color,
-                  minWidth: "120px",
                 }}
               >
-                <span className="text-white font-medium text-xs md:text-sm truncate">
+                <span className="text-white font-medium text-xs md:text-sm">
                   {stage.name}
                 </span>
                 <span className="text-white font-bold text-sm md:text-lg ml-2">
