@@ -22,12 +22,14 @@ import { getMonthlyStats } from "../lib/mockData";
 import { StatCard } from "../components/dashboard/StatCard";
 import { useDispatch, useSelector } from "react-redux";
 import { getSalesforceToken } from "../store/slices/authSlice";
-import { getApprovedThisMonth, getCashCollectedAllTime, getFundedData, getPreApprovedThisMonth, getTotalApplications, getTotalApplicationsThisMonth, getTotalApproved } from "../store/slices/dashboardSlice";
+import { getApprovedThisMonth, getCashCollectedAllTime, getFundedData, getPreApprovedThisMonth, getTotalApplications, getTotalApplicationsThisMonth, getTotalApproved, getAllAccounts } from "../store/slices/dashboardSlice";
 import { getMonthAndYear } from "../lib/dateUtils";
 import { getNewLead } from "../store/slices/applicationSlice";
+import { AccountSelect } from "../components/dashboard/AccountSelect";
 export function Dashboard({ onNavigate, onNavigateToProgram }) {
   const [fundingProgram, setFundingProgram] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedAccounts, setSelectedAccounts] = useState([]);
   // Get username from session storage
   const username = sessionStorage.getItem("partnerUsername") || "Partner";
   // Generate stats based on selected month using centralized data
@@ -55,7 +57,8 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
     fundedData,
     preApprovedApplicationsThisMonth,
     approvedApplicationsThisMonth,
-    totalApplicationsThisMonth
+    totalApplicationsThisMonth,
+    allAccounts
 
   } = useSelector((state) => state.dashboard);
   const {
@@ -67,14 +70,19 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
     if (!salesforceToken) {
       dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
     } else {
-      dispatch(getFundedData({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getNewLead({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApplicationsThisMonth({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApproved({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getPreApprovedThisMonth({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getApprovedThisMonth({ accountId: "", token: salesforceToken, month: month, year: year }));
+      // Build accountId string from selected accounts (comma-separated for multiple)
+      // Pass undefined if no accounts selected (to get all data), otherwise pass the account IDs
+      const accountId = selectedAccounts.length > 0 ? selectedAccounts.join(',') : undefined;
+      
+      dispatch(getFundedData({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getNewLead({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getTotalApplicationsThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getTotalApproved({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getPreApprovedThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getApprovedThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
+      dispatch(getAllAccounts({ token: salesforceToken }));
     }
-  }, [dispatch, salesforceToken, selectedDate]);
+  }, [dispatch, salesforceToken, selectedDate, selectedAccounts]);
   //console.log(totalApplicationsThisMonth.length,'totalApplicationsThisMonth')
   const maxCount = newLeads.length + preApprovedApplicationsThisMonth.length + approvedApplicationsThisMonth.length + fundedData.length || 0;
 
@@ -98,36 +106,48 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
 
       {/* Monthly Funding Stats Header with Date Filter */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-        <h2 className="text-base md:text-lg font-bold text-foreground">
-          Monthly Funding Stats
-        </h2>
+  <h2 className="text-base md:text-lg font-bold text-foreground">
+    Monthly Funding Stats
+  </h2>
 
-        {/* Month Filter */}
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 md:h-9 md:w-9 bg-card border-border"
-            onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <div className="flex items-center gap-2 px-3 md:px-4 py-2 bg-card border border-border rounded-md">
-            <CalendarIcon className="h-4 w-4 text-muted-foreground hidden sm:block" />
-            <span className="text-xs md:text-sm font-medium">
-              {format(selectedDate, "MMMM yyyy")}
-            </span>
-          </div>
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8 md:h-9 md:w-9 bg-card border-border"
-            onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
-          >
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+  {/* Filters grouped to the right */}
+  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+    {/* Month Filter */}
+    <div className="flex items-center gap-2">
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-8 w-8 md:h-9 md:w-9 bg-card border-border"
+        onClick={() => setSelectedDate(subMonths(selectedDate, 1))}
+      >
+        <ChevronLeft className="h-4 w-4" />
+      </Button>
+      <div className="flex items-center gap-2 px-3 md:px-4 py-2 bg-card border border-border rounded-md">
+        <CalendarIcon className="h-4 w-4 text-muted-foreground hidden sm:block" />
+        <span className="text-xs md:text-sm font-medium">
+          {format(selectedDate, "MMMM yyyy")}
+        </span>
       </div>
+      <Button
+        variant="outline"
+        size="icon"
+        className="h-8 w-8 md:h-9 md:w-9 bg-card border-border"
+        onClick={() => setSelectedDate(addMonths(selectedDate, 1))}
+      >
+        <ChevronRight className="h-4 w-4" />
+      </Button>
+    </div>
+
+    {/* Account Filter */}
+    <div className="w-full sm:w-48">
+      <AccountSelect
+        accounts={allAccounts}
+        selectedAccounts={selectedAccounts}
+        onChange={setSelectedAccounts}
+      />
+    </div>
+  </div>
+</div>
 
       {/* Stats Row - Top KPIs */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mb-6">

@@ -309,6 +309,31 @@ export const getCashCollectedLastMonth = createAsyncThunk(
   }
 );
 
+// Get All Accounts for dropdown
+export const getAllAccounts = createAsyncThunk(
+  'dashboard/getAllAccounts',
+  async ({ token }, { rejectWithValue }) => {
+    console.log(token,'12345token');
+    try {
+      const response = await axios.post(
+        `${API_URL}/services/apexrest/salesforce/portal/api/getallaccounts`,
+        {
+          leadSource: LEADSOURCE,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      return response.data?.data || [];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const transformLeadData = (data) => {
   return data.map(item => {
     const updatedItem = { ...item };
@@ -350,6 +375,7 @@ const dashboardSlice = createSlice({
   fundedData2: [],
   fundedLastMonthData: [],
   fundedDataThisYear: [],
+  allAccounts: [],
     status: 'idle', // 'loading', 'succeeded', 'failed'
     error: null,
   },
@@ -580,6 +606,19 @@ const dashboardSlice = createSlice({
   state.fundedDataThisYear = action.payload;
 })
 .addCase(getFundedDataThisYear.rejected, (state, action) => {
+  state.status = 'failed';
+  state.error = action.payload || action.error.message;
+})
+
+// Get All Accounts
+.addCase(getAllAccounts.pending, (state) => {
+  state.status = 'loading';
+})
+.addCase(getAllAccounts.fulfilled, (state, action) => {
+  state.status = 'succeeded';
+  state.allAccounts = action.payload;
+})
+.addCase(getAllAccounts.rejected, (state, action) => {
   state.status = 'failed';
   state.error = action.payload || action.error.message;
 })
