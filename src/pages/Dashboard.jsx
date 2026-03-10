@@ -66,23 +66,31 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
     newLeads
 
   } = useSelector((state) => state.application);
+  // Fetch all accounts once when token is available
   useEffect(() => {
     if (!salesforceToken) {
-      dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
+      dispatch(getSalesforceToken());
     } else {
-      // Build accountId string from selected accounts (comma-separated for multiple)
-      // Pass undefined if no accounts selected (to get all data), otherwise pass the account IDs
-      const accountId = selectedAccounts.length > 0 ? selectedAccounts.join(',') : undefined;
-      
-      dispatch(getFundedData({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
-      dispatch(getNewLead({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApplicationsThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApproved({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
-      dispatch(getPreApprovedThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
-      dispatch(getApprovedThisMonth({ accountId: accountId || "", token: salesforceToken, month: month, year: year }));
       dispatch(getAllAccounts({ token: salesforceToken }));
     }
-  }, [dispatch, salesforceToken, selectedDate, selectedAccounts]);
+  }, [dispatch, salesforceToken]);
+
+  // Fetch dashboard data once allAccounts is loaded (or when filters change)
+  useEffect(() => {
+    if (!salesforceToken) return;
+    if (allAccounts.length === 0) return; // Wait for accounts to load
+
+    const accountId = selectedAccounts.length > 0
+      ? selectedAccounts.join(',')
+      : allAccounts.map(acc => acc.Id).join(',');
+
+    dispatch(getFundedData({ accountId, token: salesforceToken, month: month, year: year }));
+    dispatch(getNewLead({ accountId, token: salesforceToken, month: month, year: year }));
+    dispatch(getTotalApplicationsThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+    dispatch(getTotalApproved({ accountId, token: salesforceToken, month: month, year: year }));
+    dispatch(getPreApprovedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+    dispatch(getApprovedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+  }, [dispatch, salesforceToken, selectedDate, selectedAccounts, allAccounts]);
   //console.log(totalApplicationsThisMonth.length,'totalApplicationsThisMonth')
   const maxCount = newLeads.length + preApprovedApplicationsThisMonth.length + approvedApplicationsThisMonth.length + fundedData.length || 0;
 
