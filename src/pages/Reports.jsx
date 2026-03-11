@@ -25,9 +25,10 @@ import * as XLSX from "xlsx";
 import { format, subMonths, addMonths, isSameMonth, parse } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { getSalesforceToken } from "../store/slices/authSlice";
-import { getCashCollectedAllTime, getCashCollectedThisMonth, getDeclinedThisMonth, getFundedData, getTotalApplicationsThisMonth } from "../store/slices/dashboardSlice";
+import { getCashCollectedAllTime, getCashCollectedThisMonth, getDeclinedThisMonth, getFundedData, getTotalApplicationsThisMonth, getAllAccounts } from "../store/slices/dashboardSlice";
 import { getMonthAndYear } from "../lib/dateUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
+import { AccountSelect } from "../components/dashboard/AccountSelect";
 // Program colors matching charts
 const PROGRAM_COLORS = {
     all: "#2D3A4F", // Deep Navy
@@ -308,6 +309,7 @@ export function Reports() {
     const [selectedProgram, setSelectedProgram] = useState("all");
     const [selectedStatus, setSelectedStatus] = useState("all");
     const [selectedDate, setSelectedDate] = useState(new Date());
+    const [selectedAccounts, setSelectedAccounts] = useState([]);
     const handlePreviousMonth = () =>
         setSelectedDate((prev) => subMonths(prev, 1));
     const handleNextMonth = () => setSelectedDate((prev) => addMonths(prev, 1));
@@ -350,19 +352,33 @@ export function Reports() {
         cashCollectedAllTime,
         fundedData,
         declinedApplicationsThisMonth,
-        totalApplicationsThisMonth
+        totalApplicationsThisMonth,
+        allAccounts
     } = useSelector((state) => state.dashboard);
+
+    // Fetch all accounts once when token is available
     useEffect(() => {
         if (!salesforceToken) {
-            dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
+            dispatch(getSalesforceToken());
         } else {
-            dispatch(getFundedData({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
-            dispatch(getDeclinedThisMonth({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
-            dispatch(getCashCollectedThisMonth({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
-            dispatch(getTotalApplicationsThisMonth({ accountId: portalUserId, token: salesforceToken, month: month, year: year }));
-            // dispatch(getTotalApproved({ accountId: portalUserId, token: salesforceToken }));
+            dispatch(getAllAccounts({ token: salesforceToken }));
         }
-    }, [dispatch, salesforceToken, selectedDate]);
+    }, [dispatch, salesforceToken]);
+
+    // Fetch dashboard data once allAccounts is loaded (or when filters change)
+    useEffect(() => {
+        if (!salesforceToken) return;
+        if (allAccounts.length === 0) return; // Wait for accounts to load
+
+        const accountId = selectedAccounts.length > 0
+            ? selectedAccounts.join(',')
+            : allAccounts.map(acc => acc.Id).join(',');
+
+        dispatch(getFundedData({ accountId, token: salesforceToken, month: month, year: year }));
+        dispatch(getDeclinedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+        dispatch(getCashCollectedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+        dispatch(getTotalApplicationsThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+    }, [dispatch, salesforceToken, selectedDate, selectedAccounts, allAccounts]);
 
     useEffect(() => {
         if (fundedData.length > 0 && selectedProgram) {
@@ -655,6 +671,14 @@ export function Reports() {
                         </SelectContent>
                     </Select>
                     {/* --- NEW PARENT FILTER END --- */}
+                    {/* Account Select */}
+                    <div className="w-full sm:w-48">
+                        <AccountSelect
+                            accounts={allAccounts}
+                            selectedAccounts={selectedAccounts}
+                            onChange={setSelectedAccounts}
+                        />
+                    </div>
                     <div className="flex items-center gap-2 bg-card border border-border rounded-lg px-3 py-2">
                         <Button
                             variant="ghost"
