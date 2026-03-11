@@ -207,7 +207,7 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
         <StatCard
           title="Approved Loans"
           value={approvedApplicationsThisMonth.length}
-          // value={monthlyStats.approved + monthlyStats.funded}
+          // value={monthlyStats.approved + monthlyStats.funded} 
           icon={CheckCircle2}
           variant="info"
         />
