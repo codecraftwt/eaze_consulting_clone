@@ -10,7 +10,7 @@ import { persistor } from "../store/store";
 // Updated items to match your Sidebar exactly
 const navItems = [
   { id: "dashboard", label: "Dashboard" },
-  // { id: "report", label: "My Report" },
+  { id: "report", label: "My Report" },
   // { id: "affiliate", label: "Become an Affiliate" },
   // { id: "loan", label: "Loan" },
   // { id: "funded", label: "Funded" },

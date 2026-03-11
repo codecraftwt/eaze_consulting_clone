@@ -73,7 +73,7 @@ export function AccountSelect({
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
-          "flex items-center justify-between gap-2 w-full px-3 py-2 text-sm bg-card border border-border rounded-md",
+          "flex items-center justify-between gap-2 w-full bg-background border-[1px] border-gray-300 h-8 md:h-10 text-xs md:text-sm rounded-md px-2",
           "hover:bg-accent hover:text-accent-foreground transition-colors",
           "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
         )}
@@ -97,11 +97,11 @@ export function AccountSelect({
               <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 ref={searchInputRef}
-                type="text"
+                                type="text"
                 placeholder="Search accounts..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-8 pr-8 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+                className="w-full pl-8 pr-8 py-2 text-xs md:text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
               />
               {searchTerm && (
                 <button
@@ -134,14 +134,14 @@ export function AccountSelect({
                   <Check className="h-3 w-3 text-white font-bold" />
                 )}
               </div>
-              <span className="text-sm font-medium">Select All</span>
+              <span className="text-xs md:text-sm font-medium">Select All</span>
             </label>
           </div>
 
           {/* Account List */}
           <div className="flex-1 overflow-auto p-1">
             {filteredAccounts.length === 0 ? (
-              <div className="p-2 text-sm text-muted-foreground text-center">
+              <div className="p-2 text-xs md:text-sm text-muted-foreground text-center">
                 {searchTerm ? "No matching accounts" : "No accounts available"}
               </div>
             ) : (
@@ -164,7 +164,7 @@ export function AccountSelect({
                       <Check className="h-3 w-3 text-white font-bold" />
                     )}
                   </div>
-                  <span className="text-sm truncate">
+              <span className="text-xs md:text-sm truncate">
                     {account.Name}
                   </span>
                 </label>
