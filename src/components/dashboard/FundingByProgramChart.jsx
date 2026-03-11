@@ -31,7 +31,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   }
   return null;
 };
-export function FundingByProgramChart({ selectedDate }) {
+export function FundingByProgramChart({ selectedDate, accountId }) {
   const programFundingData = useMemo(
     () => getFundingByProgram(selectedDate || new Date()),
     [selectedDate],
@@ -49,10 +49,12 @@ export function FundingByProgramChart({ selectedDate }) {
     if (!salesforceToken) {
       dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
     } else {
-      dispatch(getFundedData({ accountId: "", token: salesforceToken,month:month,year:year }));
+      // Use the accountId prop if provided, otherwise use empty string for all accounts
+      const accId = accountId || "";
+      dispatch(getFundedData({ accountId: accId, token: salesforceToken,month:month,year:year }));
      
     }
-  }, [dispatch, salesforceToken, selectedDate]);
+  }, [dispatch, salesforceToken, selectedDate, accountId]);
 
 
   const chartData = useMemo(() => {

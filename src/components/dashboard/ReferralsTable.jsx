@@ -52,7 +52,7 @@ export function getStatusStyles(status) {
 }
 const PAGE_SIZE = 10;
 
-export function ReferralsTable({ onViewAll, selectedDate }) {
+export function ReferralsTable({ onViewAll, selectedDate, accountId }) {
   const [filter, setFilter] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
   const stats = useMemo(
@@ -81,11 +81,13 @@ export function ReferralsTable({ onViewAll, selectedDate }) {
     if (!salesforceToken) {
       dispatch(getSalesforceToken());
     } else {
-      dispatch(getTotalApplications({ accountId: "", token: salesforceToken, month: month, year: year }));
-      dispatch(getTotalApplicationsThisMonth({ accountId: "", token: salesforceToken, month: month, year: year }));
+      // Use the accountId prop if provided, otherwise use empty string for all accounts
+      const accId = accountId || "";
+      dispatch(getTotalApplications({ accountId: accId, token: salesforceToken, month: month, year: year }));
+      dispatch(getTotalApplicationsThisMonth({ accountId: accId, token: salesforceToken, month: month, year: year }));
 
     }
-  }, [dispatch, salesforceToken, selectedDate]);
+  }, [dispatch, salesforceToken, selectedDate, accountId]);
 
 
   useEffect(() => {

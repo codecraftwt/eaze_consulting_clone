@@ -9,7 +9,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { getSalesforceToken } from "../../store/slices/authSlice";
 import { getCashCollectedAllTime, getCashCollectedLastMonth, getCashCollectedThisMonth, getFundedData, getFundedLastMonthData } from "../../store/slices/dashboardSlice";
 import { getMonthAndYear } from "../../lib/dateUtils";
-export function EarningsForecast({ selectedDate }) {
+export function EarningsForecast({ selectedDate, accountId }) {
 
    const dispatch = useDispatch();
     const { month, year } = getMonthAndYear(selectedDate)
@@ -26,14 +26,16 @@ export function EarningsForecast({ selectedDate }) {
       } else if (portalUserId) {
         const lastMonth = month === 1 ? 12 : month - 1;
     const lastYear = month === 1 ? year - 1 : year;
-        dispatch(getCashCollectedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
-        dispatch(getCashCollectedLastMonth({ accountId: "", token: salesforceToken,month:lastMonth,year:lastYear }));
-        dispatch(getCashCollectedAllTime({ accountId: "", token: salesforceToken,month:month,year:year }));
+        // Use the accountId prop if provided, otherwise use empty string for all accounts
+        const accId = accountId || "";
+        dispatch(getCashCollectedThisMonth({ accountId: accId, token: salesforceToken,month:month,year:year }));
+        dispatch(getCashCollectedLastMonth({ accountId: accId, token: salesforceToken,month:lastMonth,year:lastYear }));
+        dispatch(getCashCollectedAllTime({ accountId: accId, token: salesforceToken,month:month,year:year }));
 
-        dispatch(getFundedData({ accountId: "", token: salesforceToken ,month:month,year:year}));
-              dispatch(getFundedLastMonthData({ accountId: "", token: salesforceToken ,month:lastMonth,year:lastYear}));
+        dispatch(getFundedData({ accountId: accId, token: salesforceToken ,month:month,year:year}));
+              dispatch(getFundedLastMonthData({ accountId: accId, token: salesforceToken ,month:lastMonth,year:lastYear}));
       }
-    }, [dispatch, salesforceToken, portalUserId, selectedDate]);
+    }, [dispatch, salesforceToken, portalUserId, selectedDate, accountId]);
 
 
   const data = useMemo(

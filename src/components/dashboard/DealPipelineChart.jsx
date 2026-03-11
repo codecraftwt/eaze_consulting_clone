@@ -17,7 +17,7 @@ const COLORS = {
   approved: "#5B9AA0", // Muted Teal
   funded: "#4A7C6F", // Muted Emerald (consistent with badges)
 };
-export function DealPipelineChart({ selectedDate }) {
+export function DealPipelineChart({ selectedDate, accountId }) {
   const stats = useMemo(
     () => getMonthlyStats(selectedDate || new Date()),
     [selectedDate],
@@ -46,13 +46,15 @@ newLeads
     if (!salesforceToken) {
       dispatch(getSalesforceToken()); // Fetch the Salesforce token if not available
     } else {
-      dispatch(getFundedData({ accountId: "", token: salesforceToken,month:month,year:year }));
-      dispatch(getNewLead({ accountId: "", token: salesforceToken,month:month,year:year }));
-      dispatch(getPreApprovedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
-      dispatch(getApprovedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
-      dispatch(getDeclinedThisMonth({ accountId: "", token: salesforceToken,month:month,year:year }));
+      // Use the accountId prop if provided, otherwise use empty string for all accounts
+      const accId = accountId || "";
+      dispatch(getFundedData({ accountId: accId, token: salesforceToken,month:month,year:year }));
+      dispatch(getNewLead({ accountId: accId, token: salesforceToken,month:month,year:year }));
+      dispatch(getPreApprovedThisMonth({ accountId: accId, token: salesforceToken,month:month,year:year }));
+      dispatch(getApprovedThisMonth({ accountId: accId, token: salesforceToken,month:month,year:year }));
+      dispatch(getDeclinedThisMonth({ accountId: accId, token: salesforceToken,month:month,year:year }));
     }
-  }, [dispatch, salesforceToken,selectedDate]);
+  }, [dispatch, salesforceToken,selectedDate, accountId]);
 
 
   const { pipeline } = stats;

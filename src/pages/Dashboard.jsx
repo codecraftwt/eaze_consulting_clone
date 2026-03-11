@@ -30,6 +30,7 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
   const [fundingProgram, setFundingProgram] = useState("");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [selectedAccounts, setSelectedAccounts] = useState([]);
+  const [selectAllAccounts, setSelectAllAccounts] = useState(false);
   // Get username from session storage
   const username = sessionStorage.getItem("partnerUsername") || "Partner";
   // Generate stats based on selected month using centralized data
@@ -75,14 +76,47 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
     }
   }, [dispatch, salesforceToken]);
 
+  // Sync selectAllAccounts with selectedAccounts to ensure consistency
+  useEffect(() => {
+    if (allAccounts.length > 0) {
+      const shouldBeAllSelected = selectedAccounts.length === allAccounts.length;
+      if (selectAllAccounts !== shouldBeAllSelected) {
+        setSelectAllAccounts(shouldBeAllSelected);
+      }
+    }
+  }, [selectedAccounts, allAccounts, selectAllAccounts]);
+
+  // Compute accountId for passing to child components
+  const accountId = selectAllAccounts || selectedAccounts.length === 0
+    ? allAccounts.map(acc => acc.Id).join(',')
+    : selectedAccounts.join(',');
+
   // Fetch dashboard data once allAccounts is loaded (or when filters change)
   useEffect(() => {
     if (!salesforceToken) return;
     if (allAccounts.length === 0) return; // Wait for accounts to load
 
-    const accountId = selectedAccounts.length > 0
-      ? selectedAccounts.join(',')
-      : allAccounts.map(acc => acc.Id).join(',');
+    // Determine account IDs to use: either specific selection or all accounts
+    let accountId = '';
+    
+    if (selectAllAccounts || selectedAccounts.length === 0) {
+      // Use all accounts when Select All is checked or no specific accounts selected
+      accountId = allAccounts.map(acc => acc.Id).join(',');
+    } else if (selectedAccounts.length > 0) {
+      // Use explicitly selected accounts
+      accountId = selectedAccounts.join(',');
+    } else {
+      // Fallback to all accounts
+      accountId = allAccounts.map(acc => acc.Id).join(',');
+    }
+
+    // Ensure accountId is not empty
+    if (!accountId) {
+      accountId = allAccounts.map(acc => acc.Id).join(',');
+    }
+
+    // Log for debugging
+    console.log('Fetching data for:', { accountId, month, year, selectAllAccounts, selectedAccountsLength: selectedAccounts.length, allAccountsLength: allAccounts.length });
 
     dispatch(getFundedData({ accountId, token: salesforceToken, month: month, year: year }));
     dispatch(getNewLead({ accountId, token: salesforceToken, month: month, year: year }));
@@ -90,7 +124,7 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
     dispatch(getTotalApproved({ accountId, token: salesforceToken, month: month, year: year }));
     dispatch(getPreApprovedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
     dispatch(getApprovedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
-  }, [dispatch, salesforceToken, selectedDate, selectedAccounts, allAccounts]);
+  }, [dispatch, salesforceToken, selectedDate, selectedAccounts, selectAllAccounts, allAccounts, month, year]);
   //console.log(totalApplicationsThisMonth.length,'totalApplicationsThisMonth')
   const maxCount = newLeads.length + preApprovedApplicationsThisMonth.length + approvedApplicationsThisMonth.length + fundedData.length || 0;
 
@@ -151,7 +185,12 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
       <AccountSelect
         accounts={allAccounts}
         selectedAccounts={selectedAccounts}
-        onChange={setSelectedAccounts}
+        onChange={(accounts) => {
+          setSelectedAccounts(accounts);
+        }}
+        onSelectAllChange={(isAllSelected) => {
+          setSelectAllAccounts(isAllSelected);
+        }}
       />
     </div>
   </div>
@@ -202,21 +241,21 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
 
       {/* Charts Row - Deal Pipeline & Funding Volume */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <DealPipelineChart selectedDate={selectedDate} />
-        <FundingVolumeChart selectedDate={selectedDate} />
+        <DealPipelineChart selectedDate={selectedDate} accountId={accountId} />
+        <FundingVolumeChart selectedDate={selectedDate} accountId={accountId} />
       </div>
 
       {/* Funding by Program Chart + Earnings Forecast */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         <div className="space-y-4">
-          <FundingByProgramChart selectedDate={selectedDate} />
+          <FundingByProgramChart selectedDate={selectedDate} accountId={accountId} />
           <FundingProgramSelect
             value={fundingProgram}
             onChange={setFundingProgram}
             onNavigateToDetails={onNavigateToProgram}
           />
         </div>
-        <EarningsForecast selectedDate={selectedDate} />
+        <EarningsForecast selectedDate={selectedDate} accountId={accountId} />
       </div>
 
       {/* Bottom Row - Table and Actions Side by Side */}
@@ -225,6 +264,7 @@ export function Dashboard({ onNavigate, onNavigateToProgram }) {
           <ReferralsTable
             onViewAll={() => onNavigate("report")}
             selectedDate={selectedDate}
+            accountId={accountId}
           />
         </div>
         <div className="space-y-4">

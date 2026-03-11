@@ -6,12 +6,16 @@ export function AccountSelect({
   accounts = [], 
   selectedAccounts = [], 
   onChange,
+  onSelectAllChange,
   className 
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const dropdownRef = useRef(null);
   const searchInputRef = useRef(null);
+
+  // Determine if all accounts are selected
+  const allSelected = selectedAccounts.length === accounts.length && accounts.length > 0;
 
   // Filter accounts based on search term
   const filteredAccounts = accounts.filter(account =>
@@ -38,10 +42,15 @@ export function AccountSelect({
   }, [isOpen]);
 
   const handleSelectAll = () => {
-    if (selectedAccounts.length === accounts.length) {
+    // If all are currently selected, deselect all
+    if (allSelected) {
       onChange([]); // Deselect all
+      onSelectAllChange?.(false); // Notify parent that Select All is off
     } else {
-      onChange(accounts.map(acc => acc.Id)); // Select all
+      // Select all accounts
+      const allAccountIds = accounts.map(acc => acc.Id);
+      onChange(allAccountIds);
+      onSelectAllChange?.(true); // Notify parent that Select All is on
     }
   };
 
@@ -126,11 +135,11 @@ export function AccountSelect({
             >
               <div className={cn(
                 "w-4 h-4 border rounded flex items-center justify-center",
-                selectedAccounts.length === accounts.length && accounts.length > 0
+                allSelected
                   ? "bg-primary border-primary" 
                   : "border-muted-foreground"
               )}>
-                {(selectedAccounts.length === accounts.length && accounts.length > 0) && (
+                {allSelected && (
                   <Check className="h-3 w-3 text-white font-bold" />
                 )}
               </div>

@@ -56,7 +56,7 @@ const CustomTooltip = ({ active, payload, label, showComparison }) => {
   }
   return null;
 };
-export function FundingVolumeChart({ selectedDate }) {
+export function FundingVolumeChart({ selectedDate, accountId }) {
   const [showComparison, setShowComparison] = useState(false);
   const currentDate = selectedDate || new Date();
   const lastMonthDate = subMonths(currentDate, 1);
@@ -80,11 +80,13 @@ const lastYear = month === 1 ? year - 1 : year;
     if (!salesforceToken) {
       dispatch(getSalesforceToken());
     } else {
-      dispatch(getFundedData({ accountId: "", token: salesforceToken ,month:month,year:year}));
-      dispatch(getFundedLastMonthData({ accountId: "", token: salesforceToken ,month:lastMonth,year:lastYear}));
+      // Use the accountId prop if provided, otherwise use empty string for all accounts
+      const accId = accountId || "";
+      dispatch(getFundedData({ accountId: accId, token: salesforceToken ,month:month,year:year}));
+      dispatch(getFundedLastMonthData({ accountId: accId, token: salesforceToken ,month:lastMonth,year:lastYear}));
 
     }
-  }, [dispatch, salesforceToken, selectedDate]);
+  }, [dispatch, salesforceToken, selectedDate, accountId]);
 
   useEffect(()=>{
     //console.log(fundedData,'fundedData')
