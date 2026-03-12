@@ -615,7 +615,7 @@ export function Reports() {
             const isAll = selectedProgram === "all";
             const isMatch = curr.Loan_Program_Type__c?.toLowerCase() === selectedProgram?.toLowerCase();
             if (isAll || isMatch) {
-                return acc + (Number(curr.Cash_Collected__c || curr.Loan_Amount__c || 0) || 0);
+                return acc + (Number(curr.Cash_Collected__c) || 0);
             }
             return acc;
         }, 0);
@@ -853,24 +853,7 @@ export function Reports() {
             </h2>
 
             {/* All Stats Cards in one row */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
-                <Card className="border-l-4 border-l-success">
-                    <CardContent className="pt-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-2 bg-success/15 rounded-full">
-                                <CheckCircle className="h-6 w-6 text-[#1fad6b]" />
-                            </div>
-                            <div>
-                                <p className="text-sm text-muted-foreground">
-                                    Total Amount Funded
-                                </p>
-                                <p className="text-2xl font-bold text-success">
-                                    ${stats.funded.amount.toLocaleString()}
-                                </p>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">              
 
                 <Card className="border-l-4 border-l-warning">
                     <CardContent className="pt-6">
@@ -884,6 +867,24 @@ export function Reports() {
                                 </p>
                                 <p className="text-2xl font-bold text-warning">
                                     ${totalLoanAmount2.toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                   <Card className="border-l-4 border-l-success">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2 bg-success/15 rounded-full">
+                                <CheckCircle className="h-6 w-6 text-success" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    Total Approved
+                                </p>
+                                <p className="text-2xl font-bold text-success">
+                                    ${totalApprovedAmount.toLocaleString()}
                                 </p>
                             </div>
                         </div>
@@ -906,18 +907,18 @@ export function Reports() {
                     </CardContent>
                 </Card>
 
-                <Card className="border-l-4 border-l-success">
+               <Card className="border-l-4 border-l-success">
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-4">
                             <div className="p-2 bg-success/15 rounded-full">
-                                <CheckCircle className="h-6 w-6 text-success" />
+                                <CheckCircle className="h-6 w-6 text-[#1fad6b]" />
                             </div>
                             <div>
                                 <p className="text-sm text-muted-foreground">
-                                    Total Approved
+                                    Total Amount Funded
                                 </p>
                                 <p className="text-2xl font-bold text-success">
-                                    ${totalApprovedAmount.toLocaleString()}
+                                    ${stats.funded.amount.toLocaleString()}
                                 </p>
                             </div>
                         </div>
@@ -1007,14 +1008,24 @@ export function Reports() {
                             <TableBody>
                                 {filteredApplications2.map((app) => (
                                     <TableRow key={app.Id}>
-                                        {columnKeys.map((key) => (
-                                            <TableCell key={`${app.Id}-${key}`} className="text-xs md:text-sm whitespace-nowrap">
-                                                {/* Special formatting for specific types */}
-                                                {typeof app[key] === 'number' && key.includes('Amount')
-                                                    ? `$${app[key].toLocaleString()}`
-                                                    : String(app[key] || '-')}
-                                            </TableCell>
-                                        ))}
+                                    {columnKeys.map((key) => {
+                                            const isStatusColumn = key.toLowerCase().includes('status') || key === 'Lead_Partner_Status__c';
+                                            return (
+                                                <TableCell 
+                                                    key={`${app.Id}-${key}`} 
+                                                    className={`text-xs md:text-sm ${
+                                                        isStatusColumn 
+                                                            ? 'min-w-[200px] max-w-[320px] bg-yello-300 whitespace-normal break-words p-2' 
+                                                            : 'whitespace-nowrap'
+                                                    }`}
+                                                >
+                                                    {/* Special formatting for specific types */}
+                                                    {typeof app[key] === 'number' && key.includes('Amount')
+                                                        ? `$${app[key].toLocaleString()}`
+                                                        : String(app[key] || '-')}
+                                                </TableCell>
+                                            );
+                                        })}
                                     </TableRow>
                                 ))}
                             </TableBody>
