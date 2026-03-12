@@ -25,7 +25,7 @@ import * as XLSX from "xlsx";
 import { format, subMonths, addMonths, isSameMonth, parse } from "date-fns";
 import { useDispatch, useSelector } from "react-redux";
 import { getSalesforceToken } from "../store/slices/authSlice";
-import { getCashCollectedAllTime, getCashCollectedThisMonth, getDeclinedThisMonth, getFundedData, getTotalApplicationsThisMonth, getAllAccounts } from "../store/slices/dashboardSlice";
+import { getCashCollectedAllTime, getCashCollectedThisMonth, getDeclinedThisMonth, getFundedData, getTotalApproved, getTotalApplicationsThisMonth, getAllAccounts } from "../store/slices/dashboardSlice";
 import { getMonthAndYear } from "../lib/dateUtils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 import { AccountSelect } from "../components/dashboard/AccountSelect";
@@ -353,6 +353,7 @@ export function Reports() {
         fundedData,
         declinedApplicationsThisMonth,
         totalApplicationsThisMonth,
+        
         allAccounts
     } = useSelector((state) => state.dashboard);
 
@@ -378,6 +379,8 @@ export function Reports() {
         dispatch(getDeclinedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
         dispatch(getCashCollectedThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
         dispatch(getTotalApplicationsThisMonth({ accountId, token: salesforceToken, month: month, year: year }));
+        dispatch(getTotalApproved({ accountId, token: salesforceToken, month: month, year: year }));
+        dispatch(getCashCollectedAllTime({ accountId, token: salesforceToken, month: month, year: year }));
     }, [dispatch, salesforceToken, selectedDate, selectedAccounts, allAccounts]);
 
     useEffect(() => {
@@ -594,7 +597,29 @@ export function Reports() {
 
             return acc;
         }, 0);
-    }, [cashCollectedThisMonth, selectedProgram, totalApplicationsThisMonth]);
+    }, [totalApplicationsThisMonth, selectedProgram]);
+
+    const totalApprovedAmount = useMemo(() => {
+        return totalApproved.reduce((acc, curr) => {
+            const isAll = selectedProgram === "all";
+            const isMatch = curr.Loan_Program_Type__c?.toLowerCase() === selectedProgram?.toLowerCase();
+            if (isAll || isMatch) {
+                return acc + (Number(curr.Loan_Amount__c) || 0);
+            }
+            return acc;
+        }, 0);
+    }, [totalApproved, selectedProgram]);
+
+    const totalCashCollected = useMemo(() => {
+        return cashCollectedAllTime.reduce((acc, curr) => {
+            const isAll = selectedProgram === "all";
+            const isMatch = curr.Loan_Program_Type__c?.toLowerCase() === selectedProgram?.toLowerCase();
+            if (isAll || isMatch) {
+                return acc + (Number(curr.Cash_Collected__c || curr.Loan_Amount__c || 0) || 0);
+            }
+            return acc;
+        }, 0);
+    }, [cashCollectedAllTime, selectedProgram]);
     const statusOptions = [
         { label: "All Applications", value: "all", color: "#94a3b8" }, // Slate
         { label: "Funded Only", value: "funded", color: "#22c55e" }    // Green
@@ -827,8 +852,8 @@ export function Reports() {
                 Applications - {programName}
             </h2>
 
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* All Stats Cards in one row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                 <Card className="border-l-4 border-l-success">
                     <CardContent className="pt-6">
                         <div className="flex items-center gap-4">
@@ -875,6 +900,42 @@ export function Reports() {
                                 <p className="text-sm text-muted-foreground">Total Declined</p>
                                 <p className="text-2xl font-bold text-destructive">
                                     ${totalDeclinedAmount.toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-success">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2 bg-success/15 rounded-full">
+                                <CheckCircle className="h-6 w-6 text-success" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    Total Approved
+                                </p>
+                                <p className="text-2xl font-bold text-success">
+                                    ${totalApprovedAmount.toLocaleString()}
+                                </p>
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="border-l-4 border-l-primary">
+                    <CardContent className="pt-6">
+                        <div className="flex items-center gap-4">
+                            <div className="p-2 bg-primary/10 rounded-full">
+                                <CheckCircle className="h-6 w-6 text-primary" />
+                            </div>
+                            <div>
+                                <p className="text-sm text-muted-foreground">
+                                    Total Cash Collected
+                                </p>
+                                <p className="text-2xl font-bold text-primary">
+                                    ${totalCashCollected.toLocaleString()}
                                 </p>
                             </div>
                         </div>
