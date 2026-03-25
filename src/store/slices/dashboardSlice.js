@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import axios from 'axios';
+import { getSalesforceToken } from './authSlice';
 
 // Base URL for Salesforce API from the .env file
 const API_URL = import.meta.env.VITE_API_URL;
@@ -312,9 +313,8 @@ export const getCashCollectedLastMonth = createAsyncThunk(
 // Get All Accounts for dropdown
 export const getAllAccounts = createAsyncThunk(
   'dashboard/getAllAccounts',
-  async ({ token }, { rejectWithValue }) => {
-    console.log(token,'12345token');
-    try {
+  async ({ token }, { rejectWithValue, dispatch, getState }) => {
+    const fetchAccounts = async (accessToken) => {
       const response = await axios.post(
         `${API_URL}/services/apexrest/salesforce/portal/api/getallaccounts`,
         {
@@ -322,14 +322,29 @@ export const getAllAccounts = createAsyncThunk(
         },
         {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${accessToken}`,
             'Content-Type': 'application/json',
           },
         }
       );
       return response.data?.data || [];
+    };
+    try {
+      return await fetchAccounts(token);
     } catch (err) {
-      return rejectWithValue(err);
+      const status = err?.response?.status;
+      if (status === 401 && token) {
+        try {
+          await dispatch(getSalesforceToken()).unwrap();
+          const newToken = getState().auth.salesforceToken;
+          if (newToken) {
+            return await fetchAccounts(newToken);
+          }
+        } catch {
+          /* reject below */
+        }
+      }
+      return rejectWithValue(err.response?.data || err.message || err);
     }
   }
 );
